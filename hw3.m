@@ -52,4 +52,30 @@ fprintf("TERM 3:\n\n");
 disp(vpa(term3,4))
 fprintf("--------------------------------------\n\n")
 
-%%
+% Equation of motion
+equationOfMotion = simplify(term2 - term3) == tau; 
+fprintf("EQUATION OF MOTION:\n\n");
+disp(vpa(equationOfMotion,4))
+fprintf("--------------------------------------\n\n")
+
+%% NOW THAT THE EQUATION OF MOTION IS IMPLEMENTED LET'S EXTRACT B/C/g to build the closed form dyanmic equation
+
+% B is already computed
+
+% Christoffel symbols to extract C
+
+C = sym(zeros(3,3));
+for i=1:3
+    for j=1:3
+        for k=1:3
+            cijk = 0.5 * ( diff(B(i,j),q(k)) + diff(B(i,k),q(j)) - diff(B(j,k),q(i)) );
+            C(i,j) = C(i,j) + cijk*dq(k);
+        end
+    end
+end
+
+g = tau - B*ddq - C*dq;
+
+dynamic_euqation = B*ddq + C*dq + g == tau;
+
+
