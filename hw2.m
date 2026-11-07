@@ -24,6 +24,10 @@ I1_1 = diag([1/12*m1*(L1^2 + w^2), 1/12*m1*(w^2 + w^2), 1/12*m1*(w^2 + L1^2)]); 
 I2_2 = diag([1/2*m2*r^2, 1/12*m2*(3*r^2 + h^2), 1/12*m2*(3*r^2 + h^2)]);        % Link 2- Look at frame 2
 I3_3 = diag([1/2*m3*r^2, 1/12*m3*(3*r^2 + h^2), 1/12*m3*(3*r^2 + h^2)]);        % Link 3- Look at frame 3
 
+I1_1 = I1_1 + m1*([0 L1/2 0]*[0; L1/2; 0]*eye(3,3) - [0;L1/2;0]*[0 L1/2 0]);
+I2_2 = I2_2 + m2*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
+I3_3 = I3_3 + m3*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
+
 % Rotation of each link frame w.r.t. the base.
 % Use these to transform inertia w.r.t base (see slides)
 R1 = AB_1(1:3,1:3);  R2 = AB_2(1:3,1:3);  R3 = AB_3(1:3,1:3);
@@ -152,9 +156,3 @@ fprintf("--------------------\n")
 
 fprintf("Total energy of the manipulator\n")
 disp(vpa(T_kin + U, 4))
-
-
-%% Steiner theorem: use this to compute Inertia matrix
-
-% Scegli t_start and t_end e fai polinomio quinto per vedere come varia
-% T_kin e U e fai vedere movimento robot non so come si fa

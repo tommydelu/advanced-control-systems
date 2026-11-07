@@ -53,7 +53,10 @@ disp(vpa(term3,4))
 fprintf("--------------------------------------\n\n")
 
 % Equation of motion
-equationOfMotion = simplify(term2 - term3) == tau; 
+equationOfMotion = simplify(term2 - term3); 
+equationOfMotion = subs(equationOfMotion, [diff(Q1,t) diff(Q2,t) diff(Q3,t)], [dq1 dq2 dq3]);
+equationOfMotion = subs(equationOfMotion, [Q1 Q2 Q3], [q1 q2 q3]);
+
 fprintf("EQUATION OF MOTION:\n\n");
 disp(vpa(equationOfMotion,4))
 fprintf("--------------------------------------\n\n")
@@ -74,8 +77,11 @@ for i=1:3
     end
 end
 
-g = tau - B*ddq - C*dq;
+g = jacobian(U, q).';
 
-dynamic_euqation = B*ddq + C*dq + g == tau;
+dynamic_equation = B*ddq + C*dq + g == tau;
+
+fprintf("Difference between Lagrange equations and B*ddq + C*dq + g (must be zero):\n")
+disp(simplify(equationOfMotion - (B*ddq + C*dq + g)))
 
 
