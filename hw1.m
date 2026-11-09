@@ -119,18 +119,29 @@ q3_b = atan2(s3, c3_b);
 % q2 from z = 0.15 + 0.4*cos(q2)*(1+cos(q3))
 r_a = 0.4*(1 + c3_a);
 r_b = 0.4*(1 + c3_b);
+
 c2_a = (z - 0.15)/r_a;
 c2_b = (z - 0.15)/r_b;
+
+% Branch a: if it does not exist, the pose is not reachable at all
+if abs(c2_a) > 1
+    error("Pose not reachable: |cos(q2)| > 1");
+end
 q2_a1 = atan2( sqrt(1 - c2_a^2), c2_a);
 q2_a2 = atan2(-sqrt(1 - c2_a^2), c2_a);
-q2_b1 = atan2( sqrt(1 - c2_b^2), c2_b);
-q2_b2 = atan2(-sqrt(1 - c2_b^2), c2_b);
-
-% q1 from x = 0.5 + q1 + 0.4*sin(q2)*(1+cos(q3))
 q1_a1 = x - 0.5 - r_a*sin(q2_a1);
 q1_a2 = x - 0.5 - r_a*sin(q2_a2);
-q1_b1 = x - 0.5 - r_b*sin(q2_b1);
-q1_b2 = x - 0.5 - r_b*sin(q2_b2);
+
+% Branch b: it can not exist even if branch a exists
+if abs(c2_b) <= 1
+    q2_b1 = atan2( sqrt(1 - c2_b^2), c2_b);
+    q2_b2 = atan2(-sqrt(1 - c2_b^2), c2_b);
+    q1_b1 = x - 0.5 - r_b*sin(q2_b1);
+    q1_b2 = x - 0.5 - r_b*sin(q2_b2);
+else
+    fprintf("Branch b does not exist for this pose (|cos(q2)| > 1)\n")
+    q2_b1 = NaN; q2_b2 = NaN; q1_b1 = NaN; q1_b2 = NaN;
+end
 
 % All 4 solutions, one per row: [q1 q2 q3]
 q_sols = [q1_a1 q2_a1 q3_a;
@@ -161,7 +172,7 @@ config(3).JointPosition = q_sols(3,3);
 figure;
 show(robot,config);
 fig = gcf;
-exportgraphics(fig, "imgs/5.png");
+exportgraphics(fig, "imgs_hw1/5.png");
 fprintf("--------------------\n")
 
 % IK with Robotics toolbox: see https://it.mathworks.com/help/robotics/ref/inversekinematics-system-object.html
@@ -256,6 +267,10 @@ T = [0  -sin(yaw)  cos(yaw)*cos(pitch);
      0   cos(yaw)  sin(yaw)*cos(pitch);
      1   0        -sin(pitch)];
 TA = [eye(3) zeros(3); zeros(3) T];
+
+fprintf("Matrix that relates angular velocity and Euler angles\n")
+fprintf("--------------------\n")
+disp(TA)
 
 JG_from_JA = simplify(TA*JA_man);
 

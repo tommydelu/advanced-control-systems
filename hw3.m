@@ -28,7 +28,6 @@ fprintf("--------------------------------------\n\n")
 
 % Derivative of lagrangian w.r.t dq
 term1 = B_Q*dq;
-term1 = subs(term1, [q1 q2 q3], [Q1 Q2 Q3]);
 fprintf("TERM 1:\n\n");
 disp(vpa(term1,4))
 fprintf("--------------------------------------\n\n")
@@ -61,7 +60,7 @@ fprintf("EQUATION OF MOTION:\n\n");
 disp(vpa(equationOfMotion,4))
 fprintf("--------------------------------------\n\n")
 
-%% NOW THAT THE EQUATION OF MOTION IS IMPLEMENTED LET'S EXTRACT B/C/g to build the closed form dyanmic equation
+%% NOW THAT THE EQUATION OF MOTION IS IMPLEMENTED LET'S EXTRACT B/C/g to build the closed form dynamic equation
 
 % B is already computed
 

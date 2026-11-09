@@ -24,6 +24,7 @@ I1_1 = diag([1/12*m1*(L1^2 + w^2), 1/12*m1*(w^2 + w^2), 1/12*m1*(w^2 + L1^2)]); 
 I2_2 = diag([1/2*m2*r^2, 1/12*m2*(3*r^2 + h^2), 1/12*m2*(3*r^2 + h^2)]);        % Link 2- Look at frame 2
 I3_3 = diag([1/2*m3*r^2, 1/12*m3*(3*r^2 + h^2), 1/12*m3*(3*r^2 + h^2)]);        % Link 3- Look at frame 3
 
+% Apply Steiner theorem
 I1_1 = I1_1 + m1*([0 L1/2 0]*[0; L1/2; 0]*eye(3,3) - [0;L1/2;0]*[0 L1/2 0]);
 I2_2 = I2_2 + m2*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
 I3_3 = I3_3 + m3*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
@@ -50,7 +51,7 @@ pc1 = AB_1*pc1_1;  pc1 = simplify(pc1(1:3)); % this one depends only on q1
 pc2 = AB_2*pc2_2;  pc2 = simplify(pc2(1:3)); % this one depends on q1 and q2
 pc3 = AB_3*pc3_3;  pc3 = simplify(pc3(1:3)); % depends on q1 q2 q3
 
-fprintf("POSITION OF THE CoM OF EACH LINK\n")
+fprintf("POSITION OF THE CoM OF EACH LINK\n\n")
 disp(pc1); disp(pc2); disp(pc3)
 fprintf("--------------------\n")
 
@@ -83,7 +84,7 @@ fprintf("--------------------\n")
 syms dq1 dq2 dq3 real
 dq = [dq1; dq2; dq3];
 
-% Contribution of each link to the inertia matrix B(q): translational + rotational part. It's the summatory part.
+% Contribution of each link to the inertia matrix B(q): translational + rotational part.
 B1 = m1*(JP1.')*JP1 + (JO1.')*R1*I1_1*(R1.')*JO1;
 B2 = m2*(JP2.')*JP2 + (JO2.')*R2*I2_2*(R2.')*JO2;
 B3 = m3*(JP3.')*JP3 + (JO3.')*R3*I3_3*(R3.')*JO3;
