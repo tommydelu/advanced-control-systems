@@ -25,9 +25,9 @@ I2_2 = diag([1/2*m2*r^2, 1/12*m2*(3*r^2 + h^2), 1/12*m2*(3*r^2 + h^2)]);        
 I3_3 = diag([1/2*m3*r^2, 1/12*m3*(3*r^2 + h^2), 1/12*m3*(3*r^2 + h^2)]);        % Link 3- Look at frame 3
 
 % Apply Steiner theorem
-I1_1 = I1_1 + m1*([0 L1/2 0]*[0; L1/2; 0]*eye(3,3) - [0;L1/2;0]*[0 L1/2 0]);
-I2_2 = I2_2 + m2*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
-I3_3 = I3_3 + m3*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
+I1_1_steiner = I1_1 + m1*([0 L1/2 0]*[0; L1/2; 0]*eye(3,3) - [0;L1/2;0]*[0 L1/2 0]);
+I2_2_steiner = I2_2 + m2*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
+I3_3_steiner = I3_3 + m3*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
 
 % Rotation of each link frame w.r.t. the base.
 % Use these to transform inertia w.r.t base (see slides)
@@ -88,6 +88,10 @@ dq = [dq1; dq2; dq3];
 B1 = m1*(JP1.')*JP1 + (JO1.')*R1*I1_1*(R1.')*JO1;
 B2 = m2*(JP2.')*JP2 + (JO2.')*R2*I2_2*(R2.')*JO2;
 B3 = m3*(JP3.')*JP3 + (JO3.')*R3*I3_3*(R3.')*JO3;
+
+B1_steiner = m1*(JP1.')*JP1 + (JO1.')*R1*I1_1_steiner*(R1.')*JO1;
+B2_steiner = m2*(JP2.')*JP2 + (JO2.')*R2*I2_2_steiner*(R2.')*JO2;
+B3_steiner = m3*(JP3.')*JP3 + (JO3.')*R3*I3_3_steiner*(R3.')*JO3;
 
 B = simplify(B1 + B2 + B3);
 T_kin = simplify(1/2*(dq.')*B*dq);
