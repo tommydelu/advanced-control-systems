@@ -1,6 +1,40 @@
 %% COMPUTE KINETIC AND POTENTIAL ENERGY OF THE 3-DOF MANIPULATOR (RIGID BODY)
 
-clearvars -except robot AB_0 AB_1 AB_2 AB_3 q1 q2 q3; close all; clc
+clear; close all; clc;
+
+robot = importrobot("00001_PRR_xyx TOMMASO DELUCCHI.urdf");
+
+syms a alpha d theta q1 q2 q3 dq1 dq2 dq3 real
+
+
+A = [cos(theta) -sin(theta)*cos(alpha) sin(theta)*sin(alpha)  a*cos(theta);
+    sin(theta) cos(theta)*cos(alpha)  -cos(theta)*sin(alpha) a*sin(theta); 
+    0          sin(alpha)             cos(alpha)             d;
+    0          0                      0                      1];
+
+AB_0 = [0   0  1        0;    
+        0  -1  0        0;
+        1   0  0     0.15;
+        0   0  0        1];
+
+A3_EE = [0 0 1 0;
+         1 0 0 0;
+         0 1 0 0;
+         0 0 0 1];
+
+dh_table = [  0     pi/2  0.5+q1   0;  
+              0.4  -pi/2       0  q2;  
+              0.4      0       0  q3]; 
+
+A0_1  = subs(A,[a alpha d theta],dh_table(1,:));
+A1_2  = subs(A,[a alpha d theta],dh_table(2,:));
+A2_3  = subs(A,[a alpha d theta],dh_table(3,:));
+AB_EE = AB_0*A0_1*A1_2*A2_3*A3_EE;
+AB_1  = AB_0*A0_1;
+AB_2  = AB_1*A1_2;
+AB_3  = AB_2*A2_3;
+
+% ------------------------------ HW2 ------------------------------ %
 
 debug = 1;
 if debug
@@ -13,7 +47,7 @@ if debug
 end
 
 
-%% LINKS INERTIA MATRICES (used in rotational part of the kinetic energy)
+% LINKS INERTIA MATRICES (used in rotational part of the kinetic energy)
 
 m1 = 1; m2 = 1; m3 = 1; % mass of links (see URDF)
 w = 0.036;  L1 = 0.5;   % link 1: box w x w x L1, long side along y1
@@ -29,17 +63,17 @@ I1_1_steiner = I1_1 + m1*([0 L1/2 0]*[0; L1/2; 0]*eye(3,3) - [0;L1/2;0]*[0 L1/2 
 I2_2_steiner = I2_2 + m2*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
 I3_3_steiner = I3_3 + m3*([-0.2 0 0]*[-0.2; 0; 0]*eye(3,3) - [-0.2;0;0]*[-0.2 0 0]);
 
-% Rotation of each link frame w.r.t. the base.
-% Use these to transform inertia w.r.t base (see slides)
+% Rotation of each link frame w.r.t. the base. Use these to transform inertia w.r.t base
 R1 = AB_1(1:3,1:3);  R2 = AB_2(1:3,1:3);  R3 = AB_3(1:3,1:3);
 fprintf("Inertia of link 1:\n")
-disp(I1_1)
+disp(I1_1_steiner)
 fprintf("Inertia of link 2:\n")
-disp(I2_2)
+disp(I2_2_steiner)
 fprintf("Inertia of link 3:\n\n")
-disp(I3_3)
+disp(I3_3_steiner)
+fprintf("-------------------------------------\n\n")
 
-%% POSITION OF THE CoM OF EACH LINK W.R.T. THE BASE
+% POSITION OF THE CoM OF EACH LINK W.R.T. THE BASE
 
 % CoM of each link expressed in its own frame (constant)
 pc1_1 = [0; -L1/2; 0; 1];
@@ -53,9 +87,9 @@ pc3 = AB_3*pc3_3;  pc3 = simplify(pc3(1:3)); % depends on q1 q2 q3
 
 fprintf("POSITION OF THE CoM OF EACH LINK\n\n")
 disp(pc1); disp(pc2); disp(pc3)
-fprintf("--------------------\n")
+fprintf("-------------------------------------\n\n")
 
-%% PARTIAL JACOBIANS OF THE CoM OF EACH LINK
+% PARTIAL JACOBIANS OF THE CoM OF EACH LINK
 
 z0 = AB_0(1:3,3);  z1 = AB_1(1:3,3);  z2 = AB_2(1:3,3);
 p1 = AB_1(1:3,4);  p2 = AB_2(1:3,4);
@@ -79,9 +113,8 @@ disp(simplify(JP2 - jacobian(pc2, [q1 q2 q3])))
 disp(simplify(JP3 - jacobian(pc3, [q1 q2 q3])))
 fprintf("--------------------\n")
 
-%% KINETIC ENERGY
+% KINETIC ENERGY
 
-syms dq1 dq2 dq3 real
 dq = [dq1; dq2; dq3];
 
 % Contribution of each link to the inertia matrix B(q): translational + rotational part.
@@ -93,7 +126,7 @@ B1_steiner = m1*(JP1.')*JP1 + (JO1.')*R1*I1_1_steiner*(R1.')*JO1;
 B2_steiner = m2*(JP2.')*JP2 + (JO2.')*R2*I2_2_steiner*(R2.')*JO2;
 B3_steiner = m3*(JP3.')*JP3 + (JO3.')*R3*I3_3_steiner*(R3.')*JO3;
 
-B = simplify(B1 + B2 + B3);
+B = simplify(B1_steiner + B2_steiner + B3_steiner);
 T_kin = simplify(1/2*(dq.')*B*dq);
 
 fprintf("INERTIA MATRIX B(q)\n")
@@ -102,7 +135,7 @@ fprintf("KINETIC ENERGY\n")
 disp(vpa(T_kin,4))
 fprintf("--------------------\n")
 
-%% Let's check that the inertial matrix computed is symmetric, positive definite and configuration-dependent
+% Let's check that the inertial matrix computed is symmetric, positive definite and configuration-dependent
 
 fprintf("Size of B matrix: %d x %d\n", size(B,1), size(B,2))
 if (size(B,1) ~= size(B,2))
@@ -139,14 +172,15 @@ if isequal(B_test1, B_test2)
     error("B does not depend on the configuration!")
 end
 fprintf("B is symmetric, positive definite and configuration-dependent\n\n")
-%% Check that if v = [0 0 0] then T_kin = 0
+
+% Check that if v = [0 0 0] then T_kin = 0
 T_kin_zero_vels = double(subs(T_kin,[dq1 dq2 dq3], [0 0 0]));
 
 if (T_kin_zero_vels ~= 0)
     error("Kinetic energy is not zero when it should be!")
 end
 
-%% POTENTIAL ENERGY (see slide 20)
+% POTENTIAL ENERGY (see slide 20)
 
 g0 = [0; 0; -9.81];   % gravity in the base frame (column vector)
 
@@ -161,3 +195,23 @@ fprintf("--------------------\n")
 
 fprintf("Total energy of the manipulator\n")
 disp(vpa(T_kin + U, 4))
+
+%% COMPARISON BETWEEN RESULTS OBTAINED WITH STEINER AND WITHOUT STEINER
+
+fprintf("Difference between I1_1 and I1_1_steiner\n")
+disp(vpa(I1_1 - I1_1_steiner,4))
+
+fprintf("Difference between I2_2 and I2_2_steiner\n")
+disp(vpa(I2_2 - I2_2_steiner,4))
+
+fprintf("Difference between I3_3 and I3_3_steiner\n")
+disp(vpa(I3_3 - I3_3_steiner,4))
+
+fprintf("Difference between inertia matrices B and B_steiner\n")
+B_noSteiner = simplify(B1 + B2 + B3);
+disp(vpa(B_noSteiner - B, 4))
+
+fprintf("Difference between kinetic energies\n")
+T_kin_noSteiner = simplify(1/2*(dq.')*B_noSteiner*dq);
+disp(vpa(T_kin_noSteiner - T_kin, 4))
+fprintf("--------------------\n")
